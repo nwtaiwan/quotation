@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物業管理綜合服務報價系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+
+        :root {
+            --primary-red: #B22222;
+            --bg-cream: #FDF9F3;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* A4 橫式容器核心樣式 */
+        .preview-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .preview-container {
+            width: 297mm;
+            min-height: 210mm;
+            padding: 15mm;
+            background-color: var(--bg-cream);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            position: relative;
+            box-sizing: border-box;
+            border: 1px solid #e2e8f0;
+            transform-origin: top center; /* 縮放基點 */
+            flex-shrink: 0;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .preview-wrapper {
+                padding: 0;
+                display: block;
+            }
+            .preview-container {
+                width: 297mm;
+                height: 210mm;
+                transform: none !important;
+                box-shadow: none;
+                border: none;
+                margin: 0;
+            }
+        }
+
+        .price-text {
+            color: var(--primary-red);
+            font-weight: 800;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #4b5563;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <!-- 頂部控制列 (手機版可見) -->
+    <div class="no-print bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div id="nav-logo-container" class="w-8 h-8 bg-red-800 flex items-center justify-center text-white font-bold rounded text-xs overflow-hidden">
+                <span id="nav-logo-text">NW</span>
+                <img id="nav-logo-img" class="w-full h-full object-cover hidden" src="" alt="Logo">
+            </div>
+            <h2 class="text-lg font-bold text-gray-800">領標案場報價系統</h2>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="window.print()" class="px-4 py-2 bg-red-700 text-white rounded font-bold text-sm hover:bg-red-800 transition">
+                列印 / PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row min-h-screen">
+        
+        <!-- 左側編輯面板 (no-print) -->
+        <div class="lg:w-[350px] space-y-6 no-print bg-white p-6 border-r shadow-inner h-screen overflow-y-auto">
+            <div class="space-y-4">
+                <div class="input-group">
+                    <label>LOGO 圖片網址</label>
+                    <input type="text" id="edit-logo-url" placeholder="例：https://.../logo.png">
+                </div>
+                <div class="input-group">
+                    <label>社區名稱</label>
+                    <input type="text" id="edit-community" placeholder="例：社區管理委員會">
+                </div>
+                <div class="input-group">
+                    <label>標的地址</label>
+                    <input type="text" id="edit-address" placeholder="例：桃園市...">
+                </div>
+                <div class="input-group">
+                    <label>服務內容</label>
+                    <input type="text" id="edit-service" placeholder="例：駐衛保全服務">
+                </div>
+                <div class="input-group">
+                    <label>報價日期</label>
+                    <input type="date" id="edit-date">
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">報價項目</h3>
+                    <button onclick="addItem()" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">+ 新增</button>
+                </div>
+                <div id="items-editor" class="space-y-3">
+                    <!-- 動態加入編輯項 -->
+                </div>
+
+                <hr class="my-4">
+
+                <div class="input-group">
+                    <label>報價說明 (每行一項)</label>
+                    <textarea id="edit-notes" rows="4" class="text-xs"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>法規說明標題</label>
+                    <input type="text" id="edit-compliance-title" placeholder="標題">
+                </div>
+
+                <div class="input-group">
+                    <label>法規說明內容 (每行一項)</label>
+                    <textarea id="edit-compliance-notes" rows="4" class="text-xs"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>承辦人姓名</label>
+                    <input type="text" id="edit-contact" placeholder="姓名">
+                </div>
+
+                <div class="pt-4 space-y-2">
+                    <button onclick="resetData()" class="w-full py-2 text-gray-400 hover:text-gray-600 text-xs underline">
+                        重設為預設資料
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側預覽區 (核心縮放邏輯在此) -->
+        <div class="flex-1 bg-gray-200 overflow-auto preview-wrapper" id="preview-wrapper">
+            <div id="quotation-page" class="preview-container">
+                
+                <!-- 頁首：Logo 與 標題 -->
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center gap-3">
+                        <div id="view-logo-container" class="w-12 h-12 bg-red-800 flex items-center justify-center text-white font-bold rounded overflow-hidden">
+                            <span id="view-logo-text">Logo</span>
+                            <img id="view-logo-img" class="w-full h-full object-cover hidden" src="" alt="Logo">
+                        </div>
+                        <div class="flex flex-col">
+                            <h1 class="text-xl font-black text-gray-800 tracking-tight leading-tight">Northwest preservation</h1>
+                            <p class="text-xl font-bold tracking-[0.1em] text-gray-800 mt-0.5">西北保全股份有限公司</p>
+                            <p class="text-base font-bold tracking-[0.05em] text-gray-700">西北公寓大廈管理維護股份有限公司</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-3xl font-black tracking-[0.2em] text-gray-900">綜合管理服務 專案報價單</h2>
+                    </div>
+                </div>
+
+                <!-- 主資訊欄位 -->
+                <div class="grid grid-cols-12 gap-4 border-t-2 border-gray-800 pt-6 mb-8">
+                    <div class="col-span-7 space-y-4">
+                        <p class="text-2xl font-bold">致：<span id="view-community"></span></p>
+                        <p class="text-base font-bold">標的：<span id="view-address" class="font-normal"></span></p>
+                        <p class="text-base font-bold">服務：<span id="view-service" class="font-normal"></span></p>
+                        <p class="text-base font-bold">日期：<span id="view-date" class="font-normal"></span></p>
+                    </div>
+                    <div class="col-span-5 text-right flex flex-col justify-end">
+                        <p class="text-sm font-bold text-gray-600">每月服務總計 (含稅)：</p>
+                        <p class="text-5xl price-text my-2 leading-none">$ <span id="view-total">0</span></p>
+                        <p class="text-lg font-bold text-gray-800">新台幣 <span id="view-total-chinese"></span></p>
+                        <p class="text-xs font-bold text-gray-500 mt-1">
+                            (服務小計：$<span id="view-subtotal">0</span> | 5% 稅金：$<span id="view-tax">0</span>)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 職位表格清單 -->
+                <div id="view-items-list" class="space-y-4 mb-8">
+                    <!-- 動態職位內容 -->
+                </div>
+
+                <!-- 底部說明區 -->
+                <div class="grid grid-cols-2 gap-10 mt-auto">
+                    <!-- 左側：報價說明 -->
+                    <div class="space-y-2">
+                        <ul id="view-notes" class="text-sm space-y-2 font-bold text-gray-700">
+                            <!-- 動態說明內容 -->
+                        </ul>
+                    </div>
+
+                    <!-- 右側：法規說明 -->
+                    <div class="bg-orange-50 p-4 border border-orange-200 rounded-sm">
+                        <h4 id="view-compliance-title" class="text-base font-black mb-2 border-b border-orange-200 pb-1"></h4>
+                        <ul id="view-compliance-list" class="text-xs space-y-1.5 text-gray-700 font-bold">
+                            <!-- 動態法規內容 -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 簽章與承辦人 -->
+                <div class="grid grid-cols-3 gap-6 mt-12 pb-4">
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start">
+                        客戶確認章
+                    </div>
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start">
+                        公司確認章
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-sm flex flex-col justify-center items-end border border-red-100 h-24">
+                        <p class="text-xs font-bold text-red-800">報價承辦人：<span id="view-contact" class="text-sm"></span></p>
+                        <p class="text-xs font-bold text-red-800 mt-1">專線：03-302-6868</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const availableIcons = [
+            { label: "經理", icon: "👔" },
+            { label: "秘書", icon: "👩‍💼" },
+            { label: "清潔", icon: "🧹" },
+            { label: "機電", icon: "🔧" },
+            { label: "保全", icon: "👮" }
+        ];
+
+        // 初始與預設資料
+        const defaultData = {
+            logoUrl: "logo.png", // 新增 LOGO 網址欄位
+            community: "巨星生活家社區管理委員會",
+            address: "桃園市八德區高城八街62號",
+            service: "巨星生活家社區物業管理暨駐衛保全服務",
+            date: "2026-03-30",
+            contact: "楊蕙芳",
+            items: [
+                { role: "社區經理", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 65000, icon: "👔" },
+                { role: "財務秘書", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 50000, icon: "👩‍💼" },
+                { role: "保全 2 哨", count: 6, desc: "每日上班 8 小時 (全年無休)", price: 50000, icon: "👮" }
+            ],
+            notes: [
+                "本報價均以「月」為計費單位",
+                "包含派駐現場人員之全額薪資",
+                "涵蓋勞健保費用及 6% 勞工退休金",
+                "包含完善專業教育訓練費用",
+                "提供人員節日獎金 (春節、中秋、生日)"
+            ],
+            complianceTitle: "ISO 9001 國際品質認證 / 勞基法規遵循保證",
+            complianceNotes: [
+                "勞動部 115 年 1 月 1 日起薪資基準",
+                "2026 工資調幅：3.18%",
+                "法定月薪：$29,500 | 法定時薪：$196",
+                "(註：本報價已完全符合並吸收上述法定薪資調漲成本)"
+            ]
+        };
+
+        let data = JSON.parse(JSON.stringify(defaultData));
+
+        // 載入 LocalStorage
+        const saved = localStorage.getItem('property_quote_data_v2');
+        if (saved) {
+            data = JSON.parse(saved);
+        }
+
+        // 初始化編輯器
+        function initEditor() {
+            document.getElementById('edit-logo-url').value = data.logoUrl || "";
+            document.getElementById('edit-community').value = data.community;
+            document.getElementById('edit-address').value = data.address;
+            document.getElementById('edit-service').value = data.service;
+            document.getElementById('edit-date').value = data.date;
+            document.getElementById('edit-contact').value = data.contact;
+            document.getElementById('edit-notes').value = data.notes.join('\n');
+            document.getElementById('edit-compliance-title').value = data.complianceTitle || "";
+            document.getElementById('edit-compliance-notes').value = (data.complianceNotes || []).join('\n');
+            
+            renderItemsEditor();
+            updatePreview();
+            handleResize(); // 初始縮放
+        }
+
+        // 響應式縮放邏輯
+        function handleResize() {
+            if (window.innerWidth >= 1024) { // 桌面模式
+                const wrapper = document.getElementById('preview-wrapper');
+                const container = document.getElementById('quotation-page');
+                const wrapperWidth = wrapper.offsetWidth - 40; // 減去 padding
+                const containerWidth = 1122.5; // 297mm 轉 px 大約值
+
+                if (wrapperWidth < containerWidth) {
+                    const scale = wrapperWidth / containerWidth;
+                    container.style.transform = `scale(${scale})`;
+                    // 調整 wrapper 的高度以配合縮放後的內容，避免下方留白過多或被切掉
+                    wrapper.style.minHeight = `${210 * scale}mm`;
+                } else {
+                    container.style.transform = 'scale(1)';
+                    wrapper.style.minHeight = 'auto';
+                }
+            } else { // 移動端
+                const container = document.getElementById('quotation-page');
+                const scale = (window.innerWidth - 20) / 1122.5;
+                container.style.transform = `scale(${scale})`;
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+
+        function renderItemsEditor() {
+            const container = document.getElementById('items-editor');
+            container.innerHTML = '';
+            data.items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-gray-50 border rounded-lg space-y-2 relative shadow-sm";
+                div.innerHTML = `
+                    <button onclick="removeItem(${index})" class="absolute top-1 right-2 text-gray-400 hover:text-red-500 text-lg">×</button>
+                    <input type="text" value="${item.role}" onchange="updateItem(${index}, 'role', this.value)" class="text-xs font-bold p-1 w-full bg-transparent border-b" placeholder="職稱">
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <span class="text-[10px] text-gray-400">人數</span>
+                            <input type="number" value="${item.count}" onchange="updateItem(${index}, 'count', this.value)" class="text-xs p-1 w-full border rounded">
+                        </div>
+                        <div class="flex-[2]">
+                            <span class="text-[10px] text-gray-400">單價</span>
+                            <input type="number" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)" class="text-xs p-1 w-full border rounded">
+                        </div>
+                    </div>
+                    <textarea onchange="updateItem(${index}, 'desc', this.value)" class="text-[10px] p-1 w-full border rounded" rows="1" placeholder="工作描述">${item.desc}</textarea>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addItem() {
+            data.items.push({ role: "新職稱", count: 1, desc: "工作描述文字", price: 30000 });
+            renderItemsEditor();
+            updatePreview();
+        }
+
+        function removeItem(index) {
+            data.items.splice(index, 1);
+            renderItemsEditor();
+            updatePreview();
+        }
+
+        function updateItem(index, field, value) {
+            data.items[index][field] = (field === 'count' || field === 'price') ? Number(value) : value;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            data.logoUrl = document.getElementById('edit-logo-url').value;
+            data.community = document.getElementById('edit-community').value;
+            data.address = document.getElementById('edit-address').value;
+            data.service = document.getElementById('edit-service').value;
+            data.date = document.getElementById('edit-date').value;
+            data.contact = document.getElementById('edit-contact').value;
+            data.notes = document.getElementById('edit-notes').value.split('\n').filter(n => n.trim() !== '');
+            data.complianceTitle = document.getElementById('edit-compliance-title').value;
+            data.complianceNotes = document.getElementById('edit-compliance-notes').value.split('\n').filter(n => n.trim() !== '');
+
+            // 更新 LOGO 顯示
+            const updateLogoElement = (imgId, textId, containerId, url) => {
+                const img = document.getElementById(imgId);
+                const text = document.getElementById(textId);
+                const container = document.getElementById(containerId);
+                if (url && url.trim() !== "") {
+                    img.src = url;
+                    img.classList.remove('hidden');
+                    text.classList.add('hidden');
+                    container.classList.remove('bg-red-800');
+                    container.classList.add('bg-transparent');
+                } else {
+                    img.src = "";
+                    img.classList.add('hidden');
+                    text.classList.remove('hidden');
+                    container.classList.add('bg-red-800');
+                    container.classList.remove('bg-transparent');
+                }
+            };
+
+            updateLogoElement('nav-logo-img', 'nav-logo-text', 'nav-logo-container', data.logoUrl);
+            updateLogoElement('view-logo-img', 'view-logo-text', 'view-logo-container', data.logoUrl);
+
+            document.getElementById('view-community').innerText = data.community;
+            document.getElementById('view-address').innerText = data.address;
+            document.getElementById('view-service').innerText = data.service;
+            document.getElementById('view-date').innerText = data.date;
+            document.getElementById('view-contact').innerText = data.contact;
+
+            const itemList = document.getElementById('view-items-list');
+            itemList.innerHTML = '';
+            let subtotal = 0;
+
+            data.items.forEach(item => {
+                const lineTotal = item.count * item.price;
+                subtotal += lineTotal;
+                
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between border-b pb-3 border-gray-200";
+                div.innerHTML = `
+                    <div class="flex items-center gap-5">
+                         <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-sm">👤</div>
+                         <div>
+                            <div class="text-xl font-black text-gray-800">${item.role} <span class="text-sm font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
+                            <div class="text-sm font-bold text-gray-500 mt-0.5">${item.desc}</div>
+                         </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-gray-400 mr-10">單價: $${item.price.toLocaleString()}</span>
+                        <span class="text-2xl font-black price-text tracking-tight">$ ${lineTotal.toLocaleString()}</span>
+                    </div>
+                `;
+                itemList.appendChild(div);
+            });
+
+            const tax = Math.round(subtotal * 0.05);
+            const total = subtotal + tax;
+
+            document.getElementById('view-subtotal').innerText = subtotal.toLocaleString();
+            document.getElementById('view-tax').innerText = tax.toLocaleString();
+            document.getElementById('view-total').innerText = total.toLocaleString();
+            document.getElementById('view-total-chinese').innerText = numberToChinese(total);
+
+            const notesList = document.getElementById('view-notes');
+            notesList.innerHTML = '';
+            data.notes.forEach(note => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-2";
+                li.innerHTML = `<span class="text-red-700 text-[10px] mt-0.5">●</span> ${note}`;
+                notesList.appendChild(li);
+            });
+
+            // 更新法規說明
+            document.getElementById('view-compliance-title').innerText = data.complianceTitle;
+            const complianceList = document.getElementById('view-compliance-list');
+            complianceList.innerHTML = '';
+            data.complianceNotes.forEach(note => {
+                const li = document.createElement('li');
+                li.className = "flex items-center gap-1";
+                li.innerHTML = `<span class="text-red-700">▶</span> ${note}`;
+                complianceList.appendChild(li);
+            });
+
+            localStorage.setItem('property_quote_data_v2', JSON.stringify(data));
+        }
+
+        function numberToChinese(n) {
+            const digit = ['零', '壹', '貳', '參', '肆', '伍', '陸', '柒', '捌', '玖'];
+            const unit = [ ['元', '萬', '億'], ['', '拾', '佰', '仟'] ];
+            let s = '整';
+            n = Math.floor(n);
+            for (let i = 0; i < unit[0].length && n > 0; i++) {
+                let p = '';
+                for (let j = 0; j < unit[1].length && n > 0; j++) {
+                    p = digit[n % 10] + unit[1][j] + p;
+                    n = Math.floor(n / 10);
+                }
+                s = p.replace(/(零.)*零$/, '').replace(/^$/, '零') + unit[0][i] + s;
+            }
+            return s.replace(/(零.)*零元/, '元').replace(/(零.)+/g, '零').replace(/^整$/, '零元整');
+        }
+
+        function resetData() {
+            if(confirm('確定要清除所有內容並恢復預設值嗎？')) {
+                localStorage.removeItem('property_quote_data_v2');
+                location.reload();
+            }
+        }
+
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', updatePreview);
+        });
+
+        window.onload = initEditor;
+    </script>
+</body>
+</html>
