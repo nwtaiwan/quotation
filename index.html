@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>物業管理綜合服務報價系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
@@ -30,8 +31,9 @@
         }
 
         .preview-container {
-            width: 297mm;
-            min-height: 210mm;
+            width: 210mm;
+            min-height: 297mm;
+            height: auto;
             padding: 15mm;
             background-color: var(--bg-cream);
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
@@ -40,11 +42,13 @@
             border: 1px solid #e2e8f0;
             transform-origin: top center; /* 縮放基點 */
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         @media print {
             @page {
-                size: A4 landscape;
+                size: A4 portrait;
                 margin: 0;
             }
             body {
@@ -58,8 +62,8 @@
                 display: block;
             }
             .preview-container {
-                width: 297mm;
-                height: 210mm;
+                width: 210mm;
+                min-height: 297mm;
                 transform: none !important;
                 box-shadow: none;
                 border: none;
@@ -92,6 +96,40 @@
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
+
+        /* 設定彈窗樣式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* 高質感圖示漸層 */
+        .icon-grad-manager { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .icon-grad-secretary { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); }
+        .icon-grad-cleaner { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+        .icon-grad-mechanic { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+        .icon-grad-security { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
     </style>
 </head>
 <body class="no-scrollbar">
@@ -106,9 +144,98 @@
             <h2 class="text-lg font-bold text-gray-800">領標案場報價系統</h2>
         </div>
         <div class="flex gap-2">
+            <button onclick="openSettings()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded font-bold text-sm hover:bg-gray-200 transition border border-gray-300">
+                設定
+            </button>
             <button onclick="window.print()" class="px-4 py-2 bg-red-700 text-white rounded font-bold text-sm hover:bg-red-800 transition">
                 列印 / PDF
             </button>
+        </div>
+    </div>
+
+    <!-- 設定彈窗 (Modal) -->
+    <div id="settings-modal" class="modal-overlay no-print">
+        <div class="modal-content shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+                    <i data-lucide="settings" class="w-6 h-6"></i> 版面與圖片設定
+                </h2>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-8">
+                <!-- Logo 設定 -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-700 border-l-4 border-red-700 pl-2">系統 LOGO 設定</h3>
+                    <div class="input-group">
+                        <label>LOGO 圖片網址</label>
+                        <input type="text" id="set-logo-url" placeholder="貼上 LOGO 網址" oninput="updatePositions()">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label>水平偏移 (X)</label>
+                            <input type="number" id="set-logo-x" value="0" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>垂直偏移 (Y)</label>
+                            <input type="number" id="set-logo-y" value="0" oninput="updatePositions()">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Logo 縮放倍率</label>
+                        <input type="range" id="set-logo-scale" min="0.5" max="2" step="0.1" value="1" oninput="updatePositions()">
+                        <div class="text-[10px] text-gray-400 text-right mt-1">目前: <span id="val-logo-scale">1.0</span>x</div>
+                    </div>
+                </div>
+
+                <!-- 職位圖示設定 -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-700 border-l-4 border-blue-700 pl-2">職位圖示與位置設定</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label>經理圖示網址</label>
+                            <input type="text" id="set-icon-url-0" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>秘書圖示網址</label>
+                            <input type="text" id="set-icon-url-1" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>清潔圖示網址</label>
+                            <input type="text" id="set-icon-url-2" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>機電圖示網址</label>
+                            <input type="text" id="set-icon-url-3" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>保全圖示網址</label>
+                            <input type="text" id="set-icon-url-4" oninput="updatePositions()">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="input-group">
+                            <label>全體圖示水平偏移 (X)</label>
+                            <input type="number" id="set-icon-x" value="0" oninput="updatePositions()">
+                        </div>
+                        <div class="input-group">
+                            <label>全體圖示垂直偏移 (Y)</label>
+                            <input type="number" id="set-icon-y" value="0" oninput="updatePositions()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t flex justify-end gap-3">
+                    <button onclick="resetPositions()" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm font-bold">
+                        重設位置
+                    </button>
+                    <button onclick="closeSettings()" class="px-6 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm hover:bg-black transition">
+                        完成設定
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -170,7 +297,27 @@
                     <input type="text" id="edit-contact" placeholder="姓名">
                 </div>
 
-                <div class="pt-4 space-y-2">
+                <div class="input-group">
+                    <label>連絡電話</label>
+                    <input type="text" id="edit-phone" placeholder="電話">
+                </div>
+
+                <hr class="my-4">
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-gray-700">歷史紀錄</h3>
+                        <button onclick="saveRecord()" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition shadow-sm">
+                            儲存目前內容
+                        </button>
+                    </div>
+                    <div id="history-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        <!-- 歷史紀錄將在此處動態生成 -->
+                        <p class="text-xs text-gray-400 italic text-center py-4">暫無儲存紀錄</p>
+                    </div>
+                </div>
+
+                <div class="pt-4 space-y-2 border-t">
                     <button onclick="resetData()" class="w-full py-2 text-gray-400 hover:text-gray-600 text-xs underline">
                         重設為預設資料
                     </button>
@@ -196,22 +343,22 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <h2 class="text-3xl font-black tracking-[0.2em] text-gray-900">綜合管理服務 專案報價單</h2>
+                        <h2 class="text-2xl font-black tracking-[0.1em] text-gray-900 whitespace-nowrap">綜合管理服務 專案報價單</h2>
+                        <p class="text-sm font-bold text-gray-600 mt-1">日期：<span id="view-date" class="font-normal"></span></p>
                     </div>
                 </div>
 
                 <!-- 主資訊欄位 -->
-                <div class="grid grid-cols-12 gap-4 border-t-2 border-gray-800 pt-6 mb-8">
+                <div class="grid grid-cols-12 gap-4 border-t-2 border-gray-800 pt-6 mb-4">
                     <div class="col-span-7 space-y-4">
                         <p class="text-2xl font-bold">致：<span id="view-community"></span></p>
                         <p class="text-base font-bold">標的：<span id="view-address" class="font-normal"></span></p>
                         <p class="text-base font-bold">服務：<span id="view-service" class="font-normal"></span></p>
-                        <p class="text-base font-bold">日期：<span id="view-date" class="font-normal"></span></p>
                     </div>
                     <div class="col-span-5 text-right flex flex-col justify-end">
                         <p class="text-sm font-bold text-gray-600">每月服務總計 (含稅)：</p>
                         <p class="text-5xl price-text my-2 leading-none">$ <span id="view-total">0</span></p>
-                        <p class="text-lg font-bold text-gray-800">新台幣 <span id="view-total-chinese"></span></p>
+                        <p class="text-base font-bold text-gray-800 whitespace-nowrap">新台幣 <span id="view-total-chinese"></span></p>
                         <p class="text-xs font-bold text-gray-500 mt-1">
                             (服務小計：$<span id="view-subtotal">0</span> | 5% 稅金：$<span id="view-tax">0</span>)
                         </p>
@@ -219,12 +366,12 @@
                 </div>
 
                 <!-- 職位表格清單 -->
-                <div id="view-items-list" class="space-y-4 mb-8">
+                <div id="view-items-list" class="flex-1 space-y-1 mb-4">
                     <!-- 動態職位內容 -->
                 </div>
 
                 <!-- 底部說明區 -->
-                <div class="grid grid-cols-2 gap-10 mt-auto">
+                <div class="grid grid-cols-2 gap-6 mt-auto">
                     <!-- 左側：報價說明 -->
                     <div class="space-y-2">
                         <ul id="view-notes" class="text-sm space-y-2 font-bold text-gray-700">
@@ -234,7 +381,7 @@
 
                     <!-- 右側：法規說明 -->
                     <div class="bg-orange-50 p-4 border border-orange-200 rounded-sm">
-                        <h4 id="view-compliance-title" class="text-base font-black mb-2 border-b border-orange-200 pb-1"></h4>
+                        <h4 id="view-compliance-title" class="text-sm font-black mb-2 border-b border-orange-200 pb-1 whitespace-nowrap"></h4>
                         <ul id="view-compliance-list" class="text-xs space-y-1.5 text-gray-700 font-bold">
                             <!-- 動態法規內容 -->
                         </ul>
@@ -242,16 +389,22 @@
                 </div>
 
                 <!-- 簽章與承辦人 -->
-                <div class="grid grid-cols-3 gap-6 mt-12 pb-4">
-                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start">
-                        客戶確認章
+                <div class="grid grid-cols-3 gap-6 mt-6 pb-4">
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden">
+                        <span>西北保全確認章</span>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <img src="06.png" class="w-20 h-20 object-contain opacity-90" alt="西北保全印章">
+                        </div>
                     </div>
-                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start">
-                        公司確認章
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden">
+                        <span>西北公寓確認章</span>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <img src="07.png" class="w-20 h-20 object-contain opacity-90" alt="西北公寓印章">
+                        </div>
                     </div>
                     <div class="bg-red-50 p-4 rounded-sm flex flex-col justify-center items-end border border-red-100 h-24">
                         <p class="text-xs font-bold text-red-800">報價承辦人：<span id="view-contact" class="text-sm"></span></p>
-                        <p class="text-xs font-bold text-red-800 mt-1">專線：03-302-6868</p>
+                        <p class="text-xs font-bold text-red-800 mt-1">專線：<span id="view-phone"></span></p>
                     </div>
                 </div>
             </div>
@@ -260,25 +413,28 @@
 
     <script>
         const availableIcons = [
-            { label: "經理", icon: "👔" },
-            { label: "秘書", icon: "👩‍💼" },
-            { label: "清潔", icon: "🧹" },
-            { label: "機電", icon: "🔧" },
-            { label: "保全", icon: "👮" }
+            { label: "經理", icon: "01.png", color: "bg-blue-50" },
+            { label: "秘書", icon: "02.png", color: "bg-purple-50" },
+            { label: "清潔", icon: "03.png", color: "bg-emerald-50" },
+            { label: "機電", icon: "04.png", color: "bg-orange-50" },
+            { label: "保全", icon: "05.png", color: "bg-red-50" }
         ];
 
         // 初始與預設資料
         const defaultData = {
             logoUrl: "logo.png", // 新增 LOGO 網址欄位
+            logoPos: { x: 0, y: 0, scale: 1 }, // 新增 LOGO 位置與縮放
+            iconPos: { x: 0, y: 0 }, // 新增職位圖示位置
             community: "巨星生活家社區管理委員會",
             address: "桃園市八德區高城八街62號",
             service: "巨星生活家社區物業管理暨駐衛保全服務",
             date: "2026-03-30",
             contact: "楊蕙芳",
+            phone: "03-302-6868",
             items: [
-                { role: "社區經理", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 65000, icon: "👔" },
-                { role: "財務秘書", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 50000, icon: "👩‍💼" },
-                { role: "保全 2 哨", count: 6, desc: "每日上班 8 小時 (全年無休)", price: 50000, icon: "👮" }
+                { role: "社區經理", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 65000, icon: "01.png" },
+                { role: "財務秘書", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 50000, icon: "02.png" },
+                { role: "保全 2 哨", count: 6, desc: "每日上班 8 小時 (全年無休)", price: 50000, icon: "05.png" }
             ],
             notes: [
                 "本報價均以「月」為計費單位",
@@ -312,13 +468,159 @@
             document.getElementById('edit-service').value = data.service;
             document.getElementById('edit-date').value = data.date;
             document.getElementById('edit-contact').value = data.contact;
+            document.getElementById('edit-phone').value = data.phone || "";
             document.getElementById('edit-notes').value = data.notes.join('\n');
             document.getElementById('edit-compliance-title').value = data.complianceTitle || "";
             document.getElementById('edit-compliance-notes').value = (data.complianceNotes || []).join('\n');
             
+            // 初始化設定彈窗的值
+            document.getElementById('set-logo-url').value = data.logoUrl || "";
+            if (data.logoPos) {
+                document.getElementById('set-logo-x').value = data.logoPos.x;
+                document.getElementById('set-logo-y').value = data.logoPos.y;
+                document.getElementById('set-logo-scale').value = data.logoPos.scale;
+                document.getElementById('val-logo-scale').innerText = data.logoPos.scale;
+            }
+            if (data.iconPos) {
+                document.getElementById('set-icon-x').value = data.iconPos.x;
+                document.getElementById('set-icon-y').value = data.iconPos.y;
+            }
+
+            // 初始化職位圖示網址
+            availableIcons.forEach((icon, index) => {
+                const input = document.getElementById(`set-icon-url-${index}`);
+                if (input) input.value = icon.icon;
+            });
+
             renderItemsEditor();
+            renderHistoryList();
             updatePreview();
             handleResize(); // 初始縮放
+        }
+
+        // 設定彈窗邏輯
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function updatePositions() {
+            // 更新網址
+            data.logoUrl = document.getElementById('set-logo-url').value;
+            document.getElementById('edit-logo-url').value = data.logoUrl; // 同步到左側面板
+
+            availableIcons.forEach((icon, index) => {
+                const input = document.getElementById(`set-icon-url-${index}`);
+                if (input) {
+                    const oldIcon = icon.icon;
+                    icon.icon = input.value;
+                    // 如果原本選取的是該圖示，則更新項目資料
+                    data.items.forEach(item => {
+                        if (item.icon === oldIcon) item.icon = icon.icon;
+                    });
+                }
+            });
+
+            data.logoPos = {
+                x: parseInt(document.getElementById('set-logo-x').value) || 0,
+                y: parseInt(document.getElementById('set-logo-y').value) || 0,
+                scale: parseFloat(document.getElementById('set-logo-scale').value) || 1
+            };
+            data.iconPos = {
+                x: parseInt(document.getElementById('set-icon-x').value) || 0,
+                y: parseInt(document.getElementById('set-icon-y').value) || 0
+            };
+            
+            document.getElementById('val-logo-scale').innerText = data.logoPos.scale;
+            renderItemsEditor(); // 重新渲染編輯器以更新圖示按鈕
+            updatePreview();
+        }
+
+        function resetPositions() {
+            document.getElementById('set-logo-x').value = 0;
+            document.getElementById('set-logo-y').value = 0;
+            document.getElementById('set-logo-scale').value = 1;
+            document.getElementById('set-icon-x').value = 0;
+            document.getElementById('set-icon-y').value = 0;
+            
+            // 重設為本地預設圖示
+            const localIcons = ['01.png', '02.png', '03.png', '04.png', '05.png'];
+            availableIcons.forEach((icon, index) => {
+                icon.icon = localIcons[index];
+                document.getElementById(`set-icon-url-${index}`).value = icon.icon;
+            });
+
+            updatePositions();
+        }
+
+        // 歷史紀錄管理
+        function saveRecord() {
+            const community = document.getElementById('edit-community').value || "未命名社區";
+            const date = new Date().toLocaleString('zh-TW', { 
+                month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' 
+            });
+            const recordName = `${community} (${date})`;
+            
+            const history = JSON.parse(localStorage.getItem('property_quote_history') || '[]');
+            history.unshift({
+                id: Date.now(),
+                name: recordName,
+                data: JSON.parse(JSON.stringify(data))
+            });
+            
+            // 最多保留 20 筆紀錄
+            if (history.length > 20) history.pop();
+            
+            localStorage.setItem('property_quote_history', JSON.stringify(history));
+            renderHistoryList();
+            alert('紀錄已儲存！');
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('history-list');
+            const history = JSON.parse(localStorage.getItem('property_quote_history') || '[]');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">暫無儲存紀錄</p>';
+                return;
+            }
+            
+            container.innerHTML = history.map(record => `
+                <div class="p-2 bg-gray-50 border rounded text-xs flex justify-between items-center group hover:border-blue-300 transition">
+                    <div class="flex-1 truncate mr-2" title="${record.name}">
+                        <span class="font-bold text-gray-700">${record.name}</span>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="loadRecord(${record.id})" class="px-2 py-1 bg-blue-500 text-white rounded text-[10px] hover:bg-blue-600">恢復</button>
+                        <button onclick="deleteRecord(${record.id})" class="px-2 py-1 bg-gray-200 text-gray-600 rounded text-[10px] hover:bg-red-500 hover:text-white">刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadRecord(id) {
+            if (!confirm('恢復此紀錄將覆蓋目前正在編輯的內容，確定嗎？')) return;
+            
+            const history = JSON.parse(localStorage.getItem('property_quote_history') || '[]');
+            const record = history.find(r => r.id === id);
+            
+            if (record) {
+                data = JSON.parse(JSON.stringify(record.data));
+                initEditor(); // 重新初始化所有欄位
+                alert('紀錄已恢復！');
+            }
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('確定要刪除此紀錄嗎？')) return;
+            
+            let history = JSON.parse(localStorage.getItem('property_quote_history') || '[]');
+            history = history.filter(r => r.id !== id);
+            localStorage.setItem('property_quote_history', JSON.stringify(history));
+            renderHistoryList();
         }
 
         // 響應式縮放邏輯
@@ -353,8 +655,29 @@
             data.items.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "p-3 bg-gray-50 border rounded-lg space-y-2 relative shadow-sm";
+                
+                let iconButtons = availableIcons.map(iconObj => `
+                    <button onclick="updateItem(${index}, 'icon', '${iconObj.icon}')" 
+                            class="w-10 h-10 flex items-center justify-center rounded-lg border overflow-hidden ${item.icon === iconObj.icon ? 'ring-2 ring-blue-500 border-transparent shadow-md' : 'border-gray-200'} hover:scale-105 transition duration-200"
+                            title="${iconObj.label}">
+                        <img src="${iconObj.icon}" class="w-full h-full object-cover">
+                    </button>
+                `).join('');
+
                 div.innerHTML = `
                     <button onclick="removeItem(${index})" class="absolute top-1 right-2 text-gray-400 hover:text-red-500 text-lg">×</button>
+                    <div class="space-y-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Icon</span>
+                            <div class="flex gap-1.5">
+                                ${iconButtons}
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" value="${item.icon}" onchange="updateItem(${index}, 'icon', this.value)" 
+                                   class="text-[10px] p-1 w-full border rounded bg-white" placeholder="或貼上自定義圖示網址">
+                        </div>
+                    </div>
                     <input type="text" value="${item.role}" onchange="updateItem(${index}, 'role', this.value)" class="text-xs font-bold p-1 w-full bg-transparent border-b" placeholder="職稱">
                     <div class="flex gap-2">
                         <div class="flex-1">
@@ -373,7 +696,7 @@
         }
 
         function addItem() {
-            data.items.push({ role: "新職稱", count: 1, desc: "工作描述文字", price: 30000 });
+            data.items.push({ role: "新職稱", count: 1, desc: "工作描述文字", price: 30000, icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=new" });
             renderItemsEditor();
             updatePreview();
         }
@@ -386,6 +709,7 @@
 
         function updateItem(index, field, value) {
             data.items[index][field] = (field === 'count' || field === 'price') ? Number(value) : value;
+            if (field === 'icon') renderItemsEditor(); // 更新按鈕選取狀態
             updatePreview();
         }
 
@@ -396,6 +720,7 @@
             data.service = document.getElementById('edit-service').value;
             data.date = document.getElementById('edit-date').value;
             data.contact = document.getElementById('edit-contact').value;
+            data.phone = document.getElementById('edit-phone').value;
             data.notes = document.getElementById('edit-notes').value.split('\n').filter(n => n.trim() !== '');
             data.complianceTitle = document.getElementById('edit-compliance-title').value;
             data.complianceNotes = document.getElementById('edit-compliance-notes').value.split('\n').filter(n => n.trim() !== '');
@@ -423,11 +748,18 @@
             updateLogoElement('nav-logo-img', 'nav-logo-text', 'nav-logo-container', data.logoUrl);
             updateLogoElement('view-logo-img', 'view-logo-text', 'view-logo-container', data.logoUrl);
 
+            // 套用位置微調
+            const logoView = document.getElementById('view-logo-container');
+            if (data.logoPos) {
+                logoView.style.transform = `translate(${data.logoPos.x}px, ${data.logoPos.y}px) scale(${data.logoPos.scale})`;
+            }
+
             document.getElementById('view-community').innerText = data.community;
             document.getElementById('view-address').innerText = data.address;
             document.getElementById('view-service').innerText = data.service;
             document.getElementById('view-date').innerText = data.date;
             document.getElementById('view-contact').innerText = data.contact;
+            document.getElementById('view-phone').innerText = data.phone || "";
 
             const itemList = document.getElementById('view-items-list');
             itemList.innerHTML = '';
@@ -438,17 +770,22 @@
                 subtotal += lineTotal;
                 
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between border-b pb-3 border-gray-200";
+                div.className = "flex items-center justify-between border-b py-1.5 border-gray-100 last:border-b-0";
+                
+                const iconTransform = data.iconPos ? `translate(${data.iconPos.x}px, ${data.iconPos.y}px)` : '';
+
                 div.innerHTML = `
                     <div class="flex items-center gap-5">
-                         <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-sm">👤</div>
-                         <div>
-                            <div class="text-xl font-black text-gray-800">${item.role} <span class="text-sm font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
-                            <div class="text-sm font-bold text-gray-500 mt-0.5">${item.desc}</div>
+                         <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ring-2 ring-white flex-shrink-0" style="transform: ${iconTransform}">
+                            <img src="${item.icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}" class="w-full h-full object-cover">
+                         </div>
+                         <div class="flex-1 min-w-0">
+                            <div class="text-xl font-black text-gray-800 break-words">${item.role} <span class="text-sm font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
+                            <div class="text-sm font-bold text-gray-500 mt-0.5 break-words leading-relaxed">${item.desc}</div>
                          </div>
                     </div>
-                    <div class="text-right">
-                        <span class="text-sm font-bold text-gray-400 mr-10">單價: $${item.price.toLocaleString()}</span>
+                    <div class="text-right flex-shrink-0 ml-4">
+                        <span class="text-sm font-bold text-gray-400 block mb-1">單價: $${item.price.toLocaleString()}</span>
                         <span class="text-2xl font-black price-text tracking-tight">$ ${lineTotal.toLocaleString()}</span>
                     </div>
                 `;
@@ -484,6 +821,9 @@
             });
 
             localStorage.setItem('property_quote_data_v2', JSON.stringify(data));
+            
+            // 重新初始化 Lucide 圖示
+            setTimeout(() => lucide.createIcons(), 0);
         }
 
         function numberToChinese(n) {
