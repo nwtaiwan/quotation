@@ -34,7 +34,7 @@
             width: 210mm;
             min-height: 297mm;
             height: auto;
-            padding: 15mm;
+            padding: 8mm 15mm;
             background-color: var(--bg-cream);
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             position: relative;
@@ -330,51 +330,44 @@
             <div id="quotation-page" class="preview-container">
                 
                 <!-- 頁首：Logo 與 標題 -->
-                <div class="flex justify-between items-start mb-6">
-                    <div class="flex items-center gap-3">
-                        <div id="view-logo-container" class="w-12 h-12 bg-red-800 flex items-center justify-center text-white font-bold rounded overflow-hidden">
-                            <span id="view-logo-text">Logo</span>
-                            <img id="view-logo-img" class="w-full h-full object-cover hidden" src="" alt="Logo">
-                        </div>
-                        <div class="flex flex-col">
-                            <h1 class="text-xl font-black text-gray-800 tracking-tight leading-tight">Northwest preservation</h1>
-                            <p class="text-xl font-bold tracking-[0.1em] text-gray-800 mt-0.5">西北保全股份有限公司</p>
-                            <p class="text-base font-bold tracking-[0.05em] text-gray-700">西北公寓大廈管理維護股份有限公司</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <h2 class="text-2xl font-black tracking-[0.1em] text-gray-900 whitespace-nowrap">綜合管理服務 專案報價單</h2>
-                        <p class="text-sm font-bold text-gray-600 mt-1">日期：<span id="view-date" class="font-normal"></span></p>
+                <div class="mb-0">
+                    <div id="view-logo-container" class="w-full overflow-hidden bg-transparent">
+                        <img id="view-logo-img" class="w-full h-auto object-contain" src="00.png" alt="Company Header">
+                        <span id="view-logo-text" class="hidden"></span>
                     </div>
                 </div>
 
                 <!-- 主資訊欄位 -->
-                <div class="grid grid-cols-12 gap-4 border-t-2 border-gray-800 pt-6 mb-4">
+                <div class="grid grid-cols-12 gap-4 border-b-2 border-gray-800 pt-0 pb-6 mb-4">
                     <div class="col-span-7 space-y-4">
-                        <p class="text-2xl font-bold">致：<span id="view-community"></span></p>
+                        <p class="text-sm font-bold text-gray-600">日期：<span id="view-date" class="font-normal"></span></p>
+                        <p class="text-2xl font-bold">致：<span id="view-community" class="text-blue-700"></span></p>
                         <p class="text-base font-bold">標的：<span id="view-address" class="font-normal"></span></p>
                         <p class="text-base font-bold">服務：<span id="view-service" class="font-normal"></span></p>
                     </div>
                     <div class="col-span-5 text-right flex flex-col justify-end">
-                        <p class="text-sm font-bold text-gray-600">每月服務總計 (含稅)：</p>
-                        <p class="text-5xl price-text my-2 leading-none">$ <span id="view-total">0</span></p>
-                        <p class="text-base font-bold text-gray-800 whitespace-nowrap">新台幣 <span id="view-total-chinese"></span></p>
-                        <p class="text-xs font-bold text-gray-500 mt-1">
-                            (服務小計：$<span id="view-subtotal">0</span> | 5% 稅金：$<span id="view-tax">0</span>)
-                        </p>
+                        <div class="flex flex-col justify-end">
+                            <p class="text-sm font-bold text-gray-600">每月服務總計 (含稅)：</p>
+                            <p class="text-5xl price-text my-2 leading-none">$ <span id="view-total">0</span></p>
+                            <p class="text-base font-bold text-gray-800 whitespace-nowrap">新台幣 <span id="view-total-chinese"></span></p>
+                            <p class="text-xs font-bold text-gray-500 mt-1">
+                                (服務小計：$<span id="view-subtotal">0</span> | 5% 稅金：$<span id="view-tax">0</span>)
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- 職位表格清單 -->
-                <div id="view-items-list" class="flex-1 space-y-1 mb-4">
+                <div id="view-items-list" class="space-y-1">
                     <!-- 動態職位內容 -->
                 </div>
 
                 <!-- 底部說明區 -->
-                <div class="grid grid-cols-2 gap-6 mt-auto">
+                <div class="grid grid-cols-2 gap-6 border-t-2 border-gray-800 mt-4 pt-4">
                     <!-- 左側：報價說明 -->
-                    <div class="space-y-2">
-                        <ul id="view-notes" class="text-sm space-y-2 font-bold text-gray-700">
+                    <div class="space-y-1">
+                        <p class="text-sm font-black text-gray-800 border-b pb-1">備註：</p>
+                        <ul id="view-notes" class="text-sm space-y-1 font-bold text-gray-700">
                             <!-- 動態說明內容 -->
                         </ul>
                     </div>
@@ -390,21 +383,24 @@
 
                 <!-- 簽章與承辦人 -->
                 <div class="grid grid-cols-3 gap-6 mt-6 pb-4">
-                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden">
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden text-left">
                         <span>西北保全確認章</span>
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <img src="06.png" class="w-20 h-20 object-contain opacity-90" alt="西北保全印章">
+                        <div class="absolute inset-0 flex items-center justify-end pr-2 pointer-events-none">
+                            <img src="06.png" class="w-20 h-20 object-contain opacity-90 border border-gray-200 p-0.5 bg-white shadow-sm" alt="西北保全印章">
                         </div>
                     </div>
-                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden">
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex items-start relative overflow-hidden text-left">
                         <span>西北公寓確認章</span>
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <img src="07.png" class="w-20 h-20 object-contain opacity-90" alt="西北公寓印章">
+                        <div class="absolute inset-0 flex items-center justify-end pr-2 pointer-events-none">
+                            <img src="07.png" class="w-20 h-20 object-contain opacity-90 border border-gray-200 p-0.5 bg-white shadow-sm" alt="西北公寓印章">
                         </div>
                     </div>
-                    <div class="bg-red-50 p-4 rounded-sm flex flex-col justify-center items-end border border-red-100 h-24">
-                        <p class="text-xs font-bold text-red-800">報價承辦人：<span id="view-contact" class="text-sm"></span></p>
-                        <p class="text-xs font-bold text-red-800 mt-1">專線：<span id="view-phone"></span></p>
+                    <div class="border border-gray-400 h-24 p-2 text-xs font-bold text-gray-400 rounded-sm flex flex-col justify-start items-start">
+                        <span>報價承辦單位</span>
+                        <div class="flex-1 w-full flex flex-col justify-center items-end text-gray-800 pr-2">
+                            <p class="text-xs font-bold text-red-800">報價承辦人：<span id="view-contact" class="text-sm"></span></p>
+                            <p class="text-xs font-bold text-red-800 mt-1">專線：<span id="view-phone"></span></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -422,9 +418,9 @@
 
         // 初始與預設資料
         const defaultData = {
-            logoUrl: "logo.png", // 新增 LOGO 網址欄位
-            logoPos: { x: 0, y: 0, scale: 1 }, // 新增 LOGO 位置與縮放
-            iconPos: { x: 0, y: 0 }, // 新增職位圖示位置
+            logoUrl: "00.png", 
+            logoPos: { x: 0, y: 0, scale: 1 }, 
+            iconPos: { x: 0, y: 0 }, 
             community: "巨星生活家社區管理委員會",
             address: "桃園市八德區高城八街62號",
             service: "巨星生活家社區物業管理暨駐衛保全服務",
@@ -730,6 +726,9 @@
                 const img = document.getElementById(imgId);
                 const text = document.getElementById(textId);
                 const container = document.getElementById(containerId);
+                
+                if (!img || !text || !container) return; // 確保元素存在
+                
                 if (url && url.trim() !== "") {
                     img.src = url;
                     img.classList.remove('hidden');
@@ -746,7 +745,8 @@
             };
 
             updateLogoElement('nav-logo-img', 'nav-logo-text', 'nav-logo-container', data.logoUrl);
-            updateLogoElement('view-logo-img', 'view-logo-text', 'view-logo-container', data.logoUrl);
+            // 頁首圖片固定顯示 00.png
+            updateLogoElement('view-logo-img', 'view-logo-text', 'view-logo-container', "00.png");
 
             // 套用位置微調
             const logoView = document.getElementById('view-logo-container');
@@ -770,7 +770,7 @@
                 subtotal += lineTotal;
                 
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between border-b py-1.5 border-gray-100 last:border-b-0";
+                div.className = "flex items-center justify-between border-b py-1 border-gray-100 last:border-b-0 last:pb-0";
                 
                 const iconTransform = data.iconPos ? `translate(${data.iconPos.x}px, ${data.iconPos.y}px)` : '';
 
