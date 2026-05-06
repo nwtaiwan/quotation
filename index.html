@@ -423,7 +423,12 @@
             { label: "秘書", icon: "02.png", color: "bg-purple-50" },
             { label: "清潔", icon: "03.png", color: "bg-emerald-50" },
             { label: "機電", icon: "04.png", color: "bg-orange-50" },
-            { label: "保全", icon: "05.png", color: "bg-red-50" }
+            { label: "保全", icon: "05.png", color: "bg-red-50" },
+            { label: "人像1", icon: "11.png", color: "bg-gray-50" },
+            { label: "人像2", icon: "12.png", color: "bg-gray-50" },
+            { label: "人像3", icon: "13.png", color: "bg-gray-50" },
+            { label: "人像4", icon: "14.png", color: "bg-gray-50" },
+            { label: "人像5", icon: "15.png", color: "bg-gray-50" }
         ];
 
         // 初始與預設資料
@@ -678,9 +683,9 @@
                 div.innerHTML = `
                     <button onclick="removeItem(${index})" class="absolute top-1 right-2 text-gray-400 hover:text-red-500 text-lg">×</button>
                     <div class="space-y-2 mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Icon</span>
-                            <div class="flex gap-1.5">
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-2">Icon</span>
+                            <div class="flex flex-wrap gap-1.5 flex-1">
                                 ${iconButtons}
                             </div>
                         </div>
@@ -785,13 +790,13 @@
                 subtotal += lineTotal;
                 
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between border-b border-gray-100 last:border-b-0 last:pb-0 h-[50px] overflow-hidden";
+                div.className = "flex items-center justify-between border-b border-gray-300 last:border-b-0 last:pb-0 h-[56px] overflow-hidden";
                 
                 const iconTransform = data.iconPos ? `translate(${data.iconPos.x}px, ${data.iconPos.y}px)` : '';
 
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                         <div class="w-[40px] h-[40px] bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ring-2 ring-white flex-shrink-0" style="transform: ${iconTransform}">
+                         <div class="w-[50px] h-[50px] bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ring-2 ring-white flex-shrink-0" style="transform: ${iconTransform}">
                             <img src="${item.icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}" class="w-full h-full object-cover">
                          </div>
                          <div class="flex-1 min-w-0">
