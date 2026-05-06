@@ -340,7 +340,7 @@
                 <!-- 主資訊欄位 -->
                 <div class="grid grid-cols-12 gap-4 border-b-2 border-gray-800 pt-0 pb-6 mb-4">
                     <div class="col-span-7 space-y-4">
-                        <p class="text-sm font-bold text-gray-600">日期：<span id="view-date" class="font-normal"></span></p>
+                        <p class="text-base font-bold text-gray-600">日期：<span id="view-date" class="font-normal"></span></p>
                         <p class="text-2xl font-bold">致：<span id="view-community" class="text-blue-700"></span></p>
                         <p class="text-base font-bold">標的：<span id="view-address" class="font-normal"></span></p>
                         <p class="text-base font-bold">服務：<span id="view-service" class="font-normal"></span></p>
@@ -408,6 +408,16 @@
     </div>
 
     <script>
+        // 獲取在地日期的 YYYY-MM-DD 格式
+        const getLocalDate = () => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const today = getLocalDate();
+
         const availableIcons = [
             { label: "經理", icon: "01.png", color: "bg-blue-50" },
             { label: "秘書", icon: "02.png", color: "bg-purple-50" },
@@ -424,7 +434,7 @@
             community: "巨星生活家社區管理委員會",
             address: "桃園市八德區高城八街62號",
             service: "巨星生活家社區物業管理暨駐衛保全服務",
-            date: "2026-03-30",
+            date: today,
             contact: "楊蕙芳",
             phone: "03-302-6868",
             items: [
@@ -458,6 +468,11 @@
 
         // 初始化編輯器
         function initEditor() {
+            // 如果日期是舊的預設值或不存在，則更新為今天
+            if (!data.date || data.date === "2026-03-30") {
+                data.date = today;
+            }
+
             document.getElementById('edit-logo-url').value = data.logoUrl || "";
             document.getElementById('edit-community').value = data.community;
             document.getElementById('edit-address').value = data.address;
@@ -770,23 +785,23 @@
                 subtotal += lineTotal;
                 
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between border-b py-1 border-gray-100 last:border-b-0 last:pb-0";
+                div.className = "flex items-center justify-between border-b border-gray-100 last:border-b-0 last:pb-0 h-[50px] overflow-hidden";
                 
                 const iconTransform = data.iconPos ? `translate(${data.iconPos.x}px, ${data.iconPos.y}px)` : '';
 
                 div.innerHTML = `
-                    <div class="flex items-center gap-5">
-                         <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ring-2 ring-white flex-shrink-0" style="transform: ${iconTransform}">
+                    <div class="flex items-center gap-3">
+                         <div class="w-[40px] h-[40px] bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ring-2 ring-white flex-shrink-0" style="transform: ${iconTransform}">
                             <img src="${item.icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}" class="w-full h-full object-cover">
                          </div>
                          <div class="flex-1 min-w-0">
-                            <div class="text-xl font-black text-gray-800 break-words">${item.role} <span class="text-sm font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
-                            <div class="text-sm font-bold text-gray-500 mt-0.5 break-words leading-relaxed">${item.desc}</div>
+                            <div class="text-lg font-black text-gray-800 break-words leading-tight">${item.role} <span class="text-xs font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
+                            <div class="text-[11px] font-bold text-gray-500 break-words leading-tight">${item.desc}</div>
                          </div>
                     </div>
                     <div class="text-right flex-shrink-0 ml-4">
-                        <span class="text-sm font-bold text-gray-400 block mb-1">單價: $${item.price.toLocaleString()}</span>
-                        <span class="text-2xl font-black price-text tracking-tight">$ ${lineTotal.toLocaleString()}</span>
+                        <span class="text-[11px] font-bold text-gray-400 block">單價: $${item.price.toLocaleString()}</span>
+                        <span class="text-xl font-black price-text tracking-tight leading-tight">$ ${lineTotal.toLocaleString()}</span>
                     </div>
                 `;
                 itemList.appendChild(div);
