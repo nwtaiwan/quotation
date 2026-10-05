@@ -447,9 +447,9 @@
             contact: "楊蕙芳",
             phone: "03-302-6868",
             items: [
-                { role: "社區經理", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 65000, icon: "01.png" },
-                { role: "財務秘書", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 50000, icon: "02.png" },
-                { role: "保全 2 哨", count: 6, desc: "每日上班 8 小時 (全年無休)", price: 50000, icon: "05.png" }
+                { role: "社區經理", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 65000, icon: "01.png", unit: "人" },
+                { role: "財務秘書", count: 1, desc: "每日上班 8 小時 (週休二天，依勞基法休)", price: 50000, icon: "02.png", unit: "人" },
+                { role: "保全 2 哨", count: 6, desc: "每日上班 8 小時 (全年無休)", price: 50000, icon: "05.png", unit: "人" }
             ],
             notes: [
                 "本報價均以「月」為計費單位",
@@ -473,6 +473,9 @@
         const saved = localStorage.getItem('property_quote_data_v2');
         if (saved) {
             data = JSON.parse(saved);
+            data.items.forEach(item => {
+                if (!item.unit) item.unit = "人";
+            });
         }
 
         // 初始化編輯器
@@ -710,8 +713,12 @@
                     <input type="text" value="${item.role}" onchange="updateItem(${index}, 'role', this.value)" class="text-xs font-bold p-1 w-full bg-transparent border-b" placeholder="職稱">
                     <div class="flex gap-2">
                         <div class="flex-1">
-                            <span class="text-[10px] text-gray-400">人數</span>
+                            <span class="text-[10px] text-gray-400">數量</span>
                             <input type="number" value="${item.count}" onchange="updateItem(${index}, 'count', this.value)" class="text-xs p-1 w-full border rounded">
+                        </div>
+                        <div class="w-[70px]">
+                            <span class="text-[10px] text-gray-400">單位</span>
+                            <input type="text" value="${item.unit || '人'}" onchange="updateItem(${index}, 'unit', this.value)" class="text-xs p-1 w-full border rounded">
                         </div>
                         <div class="flex-[2]">
                             <span class="text-[10px] text-gray-400">單價</span>
@@ -736,7 +743,7 @@
         }
 
         function addItem() {
-            data.items.push({ role: "新職稱", count: 1, desc: "工作描述文字", price: 30000, icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=new" });
+            data.items.push({ role: "新職稱", count: 1, desc: "工作描述文字", price: 30000, icon: "https://api.dicebear.com/7.x/avataaars/svg?seed=new", unit: "人" });
             renderItemsEditor();
             updatePreview();
         }
@@ -824,7 +831,7 @@
                             <img src="${item.icon || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}" class="w-full h-full object-cover">
                          </div>
                          <div class="flex-1 min-w-0">
-                            <div class="text-lg font-black text-gray-800 break-words leading-tight">${item.role} <span class="text-xs font-bold text-gray-500 ml-1">(${item.count} 人)</span></div>
+                            <div class="text-lg font-black text-gray-800 break-words leading-tight">${item.role} <span class="text-xs font-bold text-gray-500 ml-1">(${item.count} ${item.unit || '人'})</span></div>
                             <div class="text-[11px] font-bold text-gray-500 break-words leading-tight">${item.desc}</div>
                          </div>
                     </div>
